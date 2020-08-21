@@ -1,3 +1,15 @@
+## 2020-08-18 v2.0.0
+* Updated SimpleSamlphp to version 1.18.7.
+* Removed SSL support because this type of test service will be used behind a load balancer, which terminates the SSL.
+* Added consul support through consul-template.
+* Replaced Apache with NGINX.
+* Replaced the original PHP Docker image with the Signnow Alpine Image.
+* Added configuration and provision scripts for nginx, supervisor, consul and consul-template.
+* Removed the Seal of Approval :(
+
+-------
+This Data is kept for history
+
 ## 2018-02-04 v1.15.2-1
 
 * Changed PHP version to 7.1 instead of 7.x because of compatibility issues.
