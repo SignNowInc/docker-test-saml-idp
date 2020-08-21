@@ -3,13 +3,12 @@ services:
   testsamlidp_idp:
     build: .
     environment:
-      SIMPLESAMLPHP_SP_ENTITY_ID: http://app.example.com
-      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost/simplesaml/module.php/saml/sp/saml2-acs.php/test-sp
-      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: http://localhost/simplesaml/module.php/saml/sp/saml2-logout.php/test-sp
-      SIMPLESAMLPHP_ADMIN_PASSWORD: test
-      SIMPLESAMLPHP_SECRET_SALT: salt
+      CONSUL_HTTP_ADDR: 172.17.0.1:8500 
+      SERVICE_NAME: myidp 
+      SERVICE_KV_PATH: "/services/myidp"
+      SIMPLESAMLPHP_SECRET_SALT: notsosecretsalt 
+      SIMPLESAMLPHP_ADMIN_PASSWORD: 1234 
+      SIMPLESAMLPHP_ADMIN_CONTACT_NAME: TheTestAdmin 
+      SIMPLESAMLPHP_ADMIN_CONTACT_MAIL: test@admin.com 
     ports:
-    - "8080:8080"
-    - "8443:8443"
-    #volumes:
-    #- /users.php:/var/www/simplesamlphp/config/simplesamlphp/authsources.php
+    - "8080:80"
