@@ -94,8 +94,8 @@ $config = array(
      * The email address will be used as the recipient address for error reports, and
      * also as the technical contact in generated metadata.
      */
-    'technicalcontact_name' => 'Administrator',
-    'technicalcontact_email' => 'na@example.org',
+    'technicalcontact_name' => ((getenv('SIMPLESAMLPHP_ADMIN_CONTACT_NAME') != '') ? getenv('SIMPLESAMLPHP_ADMIN_CONTACT_NAME') : 'Administrator'),
+    'technicalcontact_email' => ((getenv('SIMPLESAMLPHP_ADMIN_CONTACT_MAIL') != '') ? getenv('SIMPLESAMLPHP_ADMIN_CONTACT_MAIL') :'na@example.org'),
 
     /*
      * The timezone of the server. This option should be set to the timezone you want

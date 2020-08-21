@@ -1,0 +1,12 @@
+<?php
+/**
+ * SAML 2.0 remote SP metadata for SimpleSAMLphp.
+ *
+ * See: https://simplesamlphp.org/docs/stable/simplesamlphp-reference-sp-remote
+ */
+
+{{ range $data, $metadata := "SERVICE_KV_PATH/metadata" | tree | explode}}
+$metadata['{{ $metadata.name }}'] = [
+    {{ range $k, $v := $metadata.configuration }}
+    '{{ $k }}' => '{{ $v }}',{{ end }}
+];{{ end }}
