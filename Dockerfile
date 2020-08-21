@@ -1,36 +1,34 @@
-FROM php:7.1-apache
-MAINTAINER Kristoph Junge <kristoph.junge@gmail.com>
-
-# Utilities
-RUN apt-get update && \
-    apt-get -y install apt-transport-https git curl vim --no-install-recommends && \
-    rm -r /var/lib/apt/lists/*
+FROM signnow/php:7.3-alpine-1.2.0
+LABEL Maintainer="oloarte.manuel@pdffiller.team" 
 
 # SimpleSAMLphp
-ARG SIMPLESAMLPHP_VERSION=1.15.2
+ARG SIMPLESAMLPHP_VERSION=1.18.7
 RUN curl -s -L -o /tmp/simplesamlphp.tar.gz https://github.com/simplesamlphp/simplesamlphp/releases/download/v$SIMPLESAMLPHP_VERSION/simplesamlphp-$SIMPLESAMLPHP_VERSION.tar.gz && \
     tar xzf /tmp/simplesamlphp.tar.gz -C /tmp && \
     rm -f /tmp/simplesamlphp.tar.gz  && \
-    mv /tmp/simplesamlphp-* /var/www/simplesamlphp && \
-    touch /var/www/simplesamlphp/modules/exampleauth/enable
-COPY config/simplesamlphp/config.php /var/www/simplesamlphp/config
-COPY config/simplesamlphp/authsources.php /var/www/simplesamlphp/config
-COPY config/simplesamlphp/saml20-sp-remote.php /var/www/simplesamlphp/metadata
-COPY config/simplesamlphp/server.crt /var/www/simplesamlphp/cert/
-COPY config/simplesamlphp/server.pem /var/www/simplesamlphp/cert/
+    mkdir -p /app/public && \
+    mv /tmp/simplesamlphp-* /app/public/simplesamlphp && \
+    touch /app/public/simplesamlphp/modules/exampleauth/enable
 
-# Apache
-COPY config/apache/ports.conf /etc/apache2
-COPY config/apache/simplesamlphp.conf /etc/apache2/sites-available
-COPY config/apache/cert.crt /etc/ssl/cert/cert.crt
-COPY config/apache/private.key /etc/ssl/private/private.key
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf && \
-    a2enmod ssl && \
-    a2dissite 000-default.conf default-ssl.conf && \
-    a2ensite simplesamlphp.conf
+COPY config/simplesamlphp/config.php /app/public/simplesamlphp/config
+COPY config/simplesamlphp/server.crt /app/public/simplesamlphp/cert/
+COPY config/simplesamlphp/server.pem /app/public/simplesamlphp/cert/
 
-# Set work dir
-WORKDIR /var/www/simplesamlphp
+COPY config/nginx/ /etc/nginx/
+COPY config/php/app.ini /etc/php7/conf.d/app.ini 
+COPY config/supervisor/ /etc/supervisor/
+COPY config/consul /app/consul
+COPY config/consul-template /app/consul-template
 
-# General setup
-EXPOSE 8080 8443
+COPY provision /app/provision
+COPY entrypoint.d /app/entrypoint.d/
+
+RUN ln -s  /etc/php7/conf.d/app.ini /etc/php7/php-fpm.d/app.ini
+
+RUN bash /app/provision/after-build.sh
+
+EXPOSE 80
+
+VOLUME ["/app/storage/logs", "/var/log/nginx", "/var/log/php"]
+
+WORKDIR /app
