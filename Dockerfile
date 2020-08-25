@@ -21,7 +21,7 @@ COPY config/consul /app/consul
 COPY config/consul-template /app/consul-template
 
 COPY provision /app/provision
-COPY entrypoint.d /app/entrypoint.d/
+COPY entrypoint.d /entrypoint.d
 
 RUN ln -s  /etc/php7/conf.d/app.ini /etc/php7/php-fpm.d/app.ini
 
