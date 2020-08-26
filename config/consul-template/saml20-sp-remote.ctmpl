@@ -7,6 +7,8 @@
 
 {{ range $data, $metadata := "SERVICE_KV_PATH/metadata" | tree | explode}}
 $metadata['{{ $metadata.name }}'] = [
-    {{ range $k, $v := $metadata.configuration }}
+    {{ range $k, $v := $metadata.string_configuration }}
     '{{ $k }}' => '{{ $v }}',{{ end }}
+    {{ range $k, $v := $metadata.array_configuration }}
+    '{{ $k }}' => {{ $v }},{{ end }}
 ];{{ end }}
