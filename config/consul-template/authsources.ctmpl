@@ -1,4 +1,11 @@
 <?php
+/**
+ * SAML 2.0 configuration for SimpleSAMLphp.
+ * 
+ * File managed over consul template!
+ *
+ */
+
 $config = [
     'admin' => [
         'core:AdminPassword',
@@ -8,7 +15,7 @@ $config = [
         'exampleauth:UserPass',
         {{ range $users, $user := "SERVICE_KV_PATH/users"  | tree | explode }}
         '{{ .username }}:{{ .password }}' => [
-            {{ range $k, $v := $user.parameters }}
+            {{ range $k, $v := $user.attributes }}
             '{{ $k }}' => '{{ $v }}',{{ end }}
         ],{{ end }}
     ],
