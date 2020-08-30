@@ -10,18 +10,17 @@ SimpleSAMLphp is logging to stdout on debug log level. NGINX is logs (like on th
 
 The contained version of SimpleSAMLphp is 1.18.7.
 
-## Changelog
-
-See [CHANGELOG.md](https://github.com/kristophjunge/docker-test-saml-idp/blob/master/docs/CHANGELOG.md) for information about the latest changes.
-
 
 ## Usage
+
+Make sure that there is a consul server running and accepting connections
 
 ```
 docker run --name=testsamlidp_idp \
 -p 8080:80 \
 --name testidp \
 -e CONSUL_HTTP_ADDR=172.17.0.1:8500 \
+-e CONSUL_HTTP_TOKEN="" \
 -e SERVICE_NAME=myidp \
 -e SERVICE_KV_PATH="/services/myidp/" \
 -e SIMPLESAMLPHP_SECRET_SALT=notsosecretsalt \
@@ -32,20 +31,60 @@ docker run --name=testsamlidp_idp \
 ```
 
 
-There are two static users configured in the IdP with the following data:
-
-| UID | Username | Password  | Group  | Email             |
-| --- | -------- | --------- | ------ | ----------------- |
-| 1   | user1    | user1pass | group1 | user1@example.com |
-| 2   | user2    | user2pass | group2 | user2@example.com |
-
-However you can define your own users by mounting a configuration file:
+You can configure your own example user by running like this: 
 
 ```
--v /users.php:/var/www/simplesamlphp/config/authsources.php
+curl \
+  --request PUT \
+  --data 'john.doe' \
+  http://127.0.0.1:8500/v1/kv/application/users/john.doe/username
+
+  curl \
+  --request PUT \
+  --data 'secret' \
+  http://127.0.0.1:8500/v1/kv/application/users/john.doe/password
+
+  curl \
+  --request PUT \
+  --data 'john@doe.com' \
+  http://127.0.0.1:8500/v1/kv/application/users/john.doe/attributes/email
+
+  curl \
+  --request PUT \
+  --data 'john' \
+  http://127.0.0.1:8500/v1/kv/application/users/john.doe/attributes/firstname
+
 ```
 
-You can access the SimpleSAMLphp web interface of the IdP under `http://localhost:8080/simplesaml`. The admin password is what you defined under SIMPLESAMLPHP_ADMIN_PASSWORD.
+
+You can access the SimpleSAMLphp web interface of the IdP under `http://localhost:/simplesaml`. The admin password is what you defined under SIMPLESAMLPHP_ADMIN_PASSWORD.
+
+## Metadata Note
+
+The consul configuration for the metadata expects from you that you define strings with an apostrophe and array with the right brackets!
+
+Here an example of some key/values managed over terraform. Note how the strings and brackets are explicitely mentioned.
+
+```
+resource "consul_key_prefix" "metadata" {
+  path_prefix = "${local.service_kv_path}/metadata/provider/"
+
+  subkeys = {
+    "name"                       = "Provider1"
+    "configuration/entityid"     = "'myprovider1'"
+    "configuration/metadata-set" = "'saml20-sp-remote'"
+
+    "configuration/contacts"                 = "[0 => ['Binding' => 'administrative',]]"
+    "configuration/AssertionConsumerService" = "[0 => ['Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST', 'Location' => 'https://sso.my.provider.com/sso/sp/ACS.saml2', 'index' => 0, 'isDefault' => true,]]"
+    "configuration/SingleLogoutService"      = "[0 => ['Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect', 'Location' => 'https://sso.my.provider.com/sso/SLO.saml2'], 1 => ['Binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST', 'Location' => 'https://sso.my.provider.com/sso/SLO.saml2'] ]"
+    "configuration/attributes"               = "[0 => 'fname', 1 => 'lname', 2 => 'email', 3 => 'memberOf', 4 => 'email_address']"
+    "configuration/name"                     = "['en' => 'AttributeContract']"
+    "configuration/description"              = "[]"
+    "configuration/validate.authnrequest"    = "false"
+    "configuration/authproc"                 = "[0 => ['class' => 'saml:PersistentNameID', 'attribute' => 'email_address']]"
+  }
+}
+```
 
 
 ## Test the Identity Provider (IdP)
@@ -86,11 +125,6 @@ $metadata['http://localhost:8080/simplesaml/saml2/idp/metadata.php'] = array(
 Start the development IdP with the command above (usage) and initiate the login from the development SP under `http://localhost/simplesaml`.
 
 Click under `Authentication` > `Test configured authentication sources` > `test-sp` and login with one of the test credentials.
-
-
-## Contributing
-
-See [CONTRIBUTING.md](https://github.com/kristophjunge/docker-test-saml-idp/blob/master/docs/CONTRIBUTING.md) for information on how to contribute to the project.
 
 
 ## License
