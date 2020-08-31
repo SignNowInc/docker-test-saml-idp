@@ -11,7 +11,7 @@ RUN curl -s -L -o /tmp/simplesamlphp.tar.gz https://github.com/simplesamlphp/sim
     touch /app/public/simplesamlphp/modules/exampleauth/enable
 
 COPY config/simplesamlphp/config.php /app/public/simplesamlphp/config/
-COPY config/simplesamlphp/saml20-idp-hosted.php /app/public/simplesaml/metadata/
+COPY config/simplesamlphp/saml20-idp-hosted.php /app/public/simplesamlphp/metadata/
 COPY config/simplesamlphp/server.crt /app/public/simplesamlphp/cert/
 COPY config/simplesamlphp/server.pem /app/public/simplesamlphp/cert/
 
